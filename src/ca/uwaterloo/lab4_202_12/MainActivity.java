@@ -1,5 +1,8 @@
 package ca.uwaterloo.lab4_202_12;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import mapper.MapLoader;
 import mapper.MapView;
 import mapper.NavigationalMap;
@@ -22,8 +25,9 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Button;
+import android.widget.Toast;
 
-public class MainActivity extends Activity implements PositionListener{
+public class MainActivity extends Activity implements PositionListener {
 
 	static MapView mv;
 
@@ -92,6 +96,7 @@ public class MainActivity extends Activity implements PositionListener{
 		private float orientation[] = new float[3];
 		private float[] gravity;
 		private float[] magnetic;
+
 		public PlaceholderFragment() {
 		}
 
@@ -250,13 +255,43 @@ public class MainActivity extends Activity implements PositionListener{
 		}
 	}
 
+	static List<PointF> listOfPoint = new ArrayList<PointF>();
+	static PointF startingPoint;
+	static PointF endingPoint;
+	static PointF intermediate;
+
 	@Override
 	public void originChanged(MapView source, PointF loc) {
-		
+		Toast toast2 = Toast.makeText(getApplicationContext(),
+				String.format("%f %f", loc.x, loc.y), Toast.LENGTH_SHORT);
+		startingPoint = checkWall(loc);
+
+		source.setUserPoint(startingPoint);
+		toast2.show();
 	}
 
 	@Override
 	public void destinationChanged(MapView source, PointF dest) {
-		
+		endingPoint = dest;
+		listOfPoint.add(dest);
+		mv.setUserPath(listOfPoint);
+	}
+
+	public PointF checkWall(PointF startingPoint) {
+		Toast toast = Toast
+				.makeText(getApplicationContext(),
+						"Invalid origin/destination. Please plot again.",
+						Toast.LENGTH_SHORT);
+		PointF temp = startingPoint;
+		// Is is out of the map?
+		if (startingPoint.x > 17f || startingPoint.x < 2f) {
+			temp.x = -1;
+			toast.show();
+		}
+		if (startingPoint.y < 2.4f) {
+			temp.y = -1;
+			toast.show();
+		}
+		return temp;
 	}
 }
