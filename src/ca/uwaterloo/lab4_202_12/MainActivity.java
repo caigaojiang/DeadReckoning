@@ -2,7 +2,6 @@ package ca.uwaterloo.lab4_202_12;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import mapper.MapLoader;
 import mapper.MapView;
 import mapper.NavigationalMap;
@@ -30,6 +29,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity implements PositionListener {
 
 	static MapView mv;
+	static NavigationalMap map;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -40,10 +40,10 @@ public class MainActivity extends Activity implements PositionListener {
 					.add(R.id.container, new PlaceholderFragment()).commit();
 		}
 		mv = new MapView(this, 1000, 1000, 52, 52);
+		map = MapLoader.loadMap(getExternalFilesDir(null),
+				"Lab-room-peninsula.svg");
 		mv.addListener(this);
 		registerForContextMenu(mv);
-		NavigationalMap map = MapLoader.loadMap(getExternalFilesDir(null),
-				"Lab-room-peninsula.svg");
 		mv.setMap(map);
 	}
 
@@ -255,43 +255,156 @@ public class MainActivity extends Activity implements PositionListener {
 		}
 	}
 
-	static List<PointF> listOfPoint = new ArrayList<PointF>();
+	static List<PointF> path = new ArrayList<PointF>();
+	// Starting and ending points
 	static PointF startingPoint;
 	static PointF endingPoint;
-	static PointF intermediate;
+	// Two arbitrary points that help us to connect path
+	static PointF intermediate1;
+	static PointF intermediate2;
 
 	@Override
 	public void originChanged(MapView source, PointF loc) {
-		Toast toast2 = Toast.makeText(getApplicationContext(),
-				String.format("%f %f", loc.x, loc.y), Toast.LENGTH_SHORT);
 		startingPoint = checkWall(loc);
-
+		intermediate1 = new PointF(startingPoint.x, 9.4f);
 		source.setUserPoint(startingPoint);
-		toast2.show();
+		Toast t = Toast.makeText(getApplicationContext(),
+				String.format("%f %f", startingPoint.x, startingPoint.y),
+				Toast.LENGTH_SHORT);
+		t.show();
+		if (endingPoint != null) {
+			drawPath();
+		}
 	}
 
 	@Override
 	public void destinationChanged(MapView source, PointF dest) {
-		endingPoint = dest;
-		listOfPoint.add(dest);
-		mv.setUserPath(listOfPoint);
+		endingPoint = checkWall(dest);
+		intermediate2 = new PointF(endingPoint.x, 9.4f);
+		if (startingPoint != null) {
+			drawPath();
+		}
 	}
 
-	public PointF checkWall(PointF startingPoint) {
-		Toast toast = Toast
-				.makeText(getApplicationContext(),
-						"Invalid origin/destination. Please plot again.",
-						Toast.LENGTH_SHORT);
-		PointF temp = startingPoint;
-		// Is is out of the map?
-		if (startingPoint.x > 17f || startingPoint.x < 2f) {
-			temp.x = -1;
+	/**
+	 * Check if a point is placed correctly
+	 * 
+	 * @param point
+	 *            point of interest. Either the starting point or the ending
+	 *            point
+	 * @return return a invalid point if a point is not placed correctly.
+	 *         Otherwise, return the original point
+	 */
+	public PointF checkWall(PointF point) {
+		// Warning toast
+		Toast toast = Toast.makeText(getApplicationContext(),
+				"Invalid origin/destination. Please plot again.",
+				Toast.LENGTH_SHORT);
+		// Is is out of the map or on the desk?
+		if (point.x > 17f || point.x < 2f || inDesk1(point) || inDesk2(point)
+				|| inDesk3(point)) {
+			point.x = -1;
 			toast.show();
 		}
-		if (startingPoint.y < 2.4f) {
-			temp.y = -1;
+		if (point.y < 2.4f || point.y > 11.2) {
+			point.y = -1;
 			toast.show();
 		}
-		return temp;
+		return point;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #1. Otherwise, false
+	 */
+	public boolean inDesk1(PointF point) {
+		if (point.x > 4.35 && point.x < 6.54 && point.y < 8.55)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #2. Otherwise, false
+	 */
+	public boolean inDesk2(PointF point) {
+		if (point.x > 8.3 && point.x < 10.7 && point.y < 8.55)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #3. Otherwise, false
+	 */
+	public boolean inDesk3(PointF point) {
+		if (point.x > 12.43 && point.x < 14.68 && point.y < 8.55)
+			return true;
+		return false;
+	}
+
+	/**
+	 * A method that detects obstacles between two points (Basically check if
+	 * two points are in the same area/section)
+	 * 
+	 * @param start
+	 *            starting point
+	 * @param end
+	 *            destination
+	 * @return true if there is no obstacles between two points. Otherwise,
+	 *         false.
+	 */
+	public boolean noObstacle(PointF start, PointF end) {
+		// To check if there is no obstacle
+		// we have to check if two points are in the same area
+		if (start.x > 2 && start.x < 4.35 && end.x > 2 && end.x < 4.35)
+			return true;
+		if (start.x > 6.54 && start.x < 8.3 && end.x > 6.54 && end.x < 8.3)
+			return true;
+		if (start.x > 10.7 && start.x < 12.43 && end.x > 10.7 && end.x < 12.43)
+			return true;
+		if (start.x > 14.68 && start.x < 17 && end.x > 14.68 && end.x < 17)
+			return true;
+		if (start.y > 8.55 && start.y < 10.25 && end.y > 8.55
+				&& start.y < 10.25)
+			return true;
+		return false;
+	}
+
+	/**
+	 * A method that draw the path on the map by adding points to the path
+	 * arraylist and using setUserPath()
+	 */
+	public void drawPath() {
+		// Draw no path if one of the two points are not on the map
+		if (startingPoint.x == -1 || startingPoint.y == -1
+				|| endingPoint.x == -1 || endingPoint.y == -1) {
+			path.clear();
+			mv.setUserPath(path);
+		} else {
+			if (noObstacle(startingPoint, endingPoint)) {
+				// If there is no obstacle between two points
+				// just connect them together
+				path.clear();
+				path.add(startingPoint);
+				path.add(endingPoint);
+				mv.setUserPath(path);
+			} else {
+				// Connect starting point, two intermediate points
+				// and ending point in order to create a path
+				path.clear();
+				path.add(startingPoint);
+				path.add(intermediate1);
+				path.add(intermediate2);
+				path.add(endingPoint);
+				mv.setUserPath(path);
+			}
+		}
 	}
 }
