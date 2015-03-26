@@ -39,9 +39,8 @@ public class MainActivity extends Activity implements PositionListener {
 			getFragmentManager().beginTransaction()
 					.add(R.id.container, new PlaceholderFragment()).commit();
 		}
-		mv = new MapView(this, 1000, 1000, 52, 52);
-		map = MapLoader.loadMap(getExternalFilesDir(null),
-				"Lab-room-peninsula.svg");
+		mv = new MapView(this, 1000, 1000, 40, 40);
+		map = MapLoader.loadMap(getExternalFilesDir(null), "E2-3344-W2015.svg");
 		mv.addListener(this);
 		registerForContextMenu(mv);
 		mv.setMap(map);
@@ -255,6 +254,7 @@ public class MainActivity extends Activity implements PositionListener {
 		}
 	}
 
+	// A list that represent all the points necessary to draw the path
 	static List<PointF> path = new ArrayList<PointF>();
 	// Starting and ending points
 	static PointF startingPoint;
@@ -262,16 +262,15 @@ public class MainActivity extends Activity implements PositionListener {
 	// Two arbitrary points that help us to connect path
 	static PointF intermediate1;
 	static PointF intermediate2;
+	static PointF intermediate3;
 
 	@Override
 	public void originChanged(MapView source, PointF loc) {
-		startingPoint = checkWall(loc);
-		intermediate1 = new PointF(startingPoint.x, 9.4f);
-		source.setUserPoint(startingPoint);
 		Toast t = Toast.makeText(getApplicationContext(),
-				String.format("%f %f", startingPoint.x, startingPoint.y),
-				Toast.LENGTH_SHORT);
+				String.format("%f %f", loc.x, loc.y), Toast.LENGTH_SHORT);
 		t.show();
+		startingPoint = checkWall(loc);
+		source.setUserPoint(startingPoint);
 		if (endingPoint != null) {
 			drawPath();
 		}
@@ -280,7 +279,6 @@ public class MainActivity extends Activity implements PositionListener {
 	@Override
 	public void destinationChanged(MapView source, PointF dest) {
 		endingPoint = checkWall(dest);
-		intermediate2 = new PointF(endingPoint.x, 9.4f);
 		if (startingPoint != null) {
 			drawPath();
 		}
@@ -301,12 +299,13 @@ public class MainActivity extends Activity implements PositionListener {
 				"Invalid origin/destination. Please plot again.",
 				Toast.LENGTH_SHORT);
 		// Is is out of the map or on the desk?
-		if (point.x > 17f || point.x < 2f || inDesk1(point) || inDesk2(point)
-				|| inDesk3(point)) {
+		if (point.x < 2.19f || point.x > 24.3f || obstacle1(point)
+				|| obstacle2(point) || obstacle3(point) || obstacle4(point)
+				|| obstacle5(point) || obstacle6(point) || obstacle7(point)) {
 			point.x = -1;
 			toast.show();
 		}
-		if (point.y < 2.4f || point.y > 11.2) {
+		if (point.y < 2.18f || point.y > 21) {
 			point.y = -1;
 			toast.show();
 		}
@@ -319,8 +318,8 @@ public class MainActivity extends Activity implements PositionListener {
 	 *            either the starting point or the ending point
 	 * @return true if user put a point on desk #1. Otherwise, false
 	 */
-	public boolean inDesk1(PointF point) {
-		if (point.x > 4.35 && point.x < 6.54 && point.y < 8.55)
+	public boolean obstacle1(PointF point) {
+		if (point.x > 2.19 && point.x < 3.77 && point.y < 17.5)
 			return true;
 		return false;
 	}
@@ -331,8 +330,8 @@ public class MainActivity extends Activity implements PositionListener {
 	 *            either the starting point or the ending point
 	 * @return true if user put a point on desk #2. Otherwise, false
 	 */
-	public boolean inDesk2(PointF point) {
-		if (point.x > 8.3 && point.x < 10.7 && point.y < 8.55)
+	public boolean obstacle2(PointF point) {
+		if (point.x > 10.08 && point.x < 13.19 && point.y < 17.5)
 			return true;
 		return false;
 	}
@@ -343,8 +342,56 @@ public class MainActivity extends Activity implements PositionListener {
 	 *            either the starting point or the ending point
 	 * @return true if user put a point on desk #3. Otherwise, false
 	 */
-	public boolean inDesk3(PointF point) {
-		if (point.x > 12.43 && point.x < 14.68 && point.y < 8.55)
+	public boolean obstacle3(PointF point) {
+		if (point.x > 13.9 && point.x < 17.2 && point.y < 17.5)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #3. Otherwise, false
+	 */
+	public boolean obstacle4(PointF point) {
+		if (point.x > 20.7 && point.y < 4.4)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #3. Otherwise, false
+	 */
+	public boolean obstacle5(PointF point) {
+		if (point.x > 22.83 && point.y < 19.24 && point.y > 6.99)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #3. Otherwise, false
+	 */
+	public boolean obstacle6(PointF point) {
+		if (point.x > 21.5 && point.y > 20.1)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #3. Otherwise, false
+	 */
+	public boolean obstacle7(PointF point) {
+		if (point.x > 4.79 && point.x < 19.7 && point.y > 19.26)
 			return true;
 		return false;
 	}
@@ -363,16 +410,14 @@ public class MainActivity extends Activity implements PositionListener {
 	public boolean noObstacle(PointF start, PointF end) {
 		// To check if there is no obstacle
 		// we have to check if two points are in the same area
-		if (start.x > 2 && start.x < 4.35 && end.x > 2 && end.x < 4.35)
+		if ((start.x > 3.77 && start.x < 10.08 && start.y < 19.26)
+				&& (end.x > 3.77 && end.x < 10.08 && end.y < 19.26))
 			return true;
-		if (start.x > 6.54 && start.x < 8.3 && end.x > 6.54 && end.x < 8.3)
+		if ((start.x > 13.19 && start.x < 13.9 && start.y < 19.26)
+				&& (end.x > 13.19 && end.x < 13.9 && end.y < 19.26))
 			return true;
-		if (start.x > 10.7 && start.x < 12.43 && end.x > 10.7 && end.x < 12.43)
-			return true;
-		if (start.x > 14.68 && start.x < 17 && end.x > 14.68 && end.x < 17)
-			return true;
-		if (start.y > 8.55 && start.y < 10.25 && end.y > 8.55
-				&& start.y < 10.25)
+		if ((start.x > 17.2 && start.x < 24.3 && start.y < 19.26)
+				&& (end.x > 17.2 && end.x < 24.3 && end.y < 19.26))
 			return true;
 		return false;
 	}
@@ -396,15 +441,58 @@ public class MainActivity extends Activity implements PositionListener {
 				path.add(endingPoint);
 				mv.setUserPath(path);
 			} else {
-				// Connect starting point, two intermediate points
-				// and ending point in order to create a path
-				path.clear();
-				path.add(startingPoint);
-				path.add(intermediate1);
-				path.add(intermediate2);
-				path.add(endingPoint);
-				mv.setUserPath(path);
+				if (inSpecialCorner(startingPoint)
+						&& inSpecialCorner(endingPoint)) {
+					intermediate1 = new PointF(21f, startingPoint.y);
+					intermediate2 = new PointF(21f, endingPoint.y);
+					path.clear();
+					path.add(startingPoint);
+					path.add(intermediate1);
+					path.add(intermediate2);
+					path.add(endingPoint);
+					mv.setUserPath(path);
+
+				} else if (inSpecialCorner(startingPoint)) {
+					path.clear();
+					intermediate1 = new PointF(21f, startingPoint.y);
+					intermediate2 = new PointF(21f, 18.5f);
+					intermediate3 = new PointF(endingPoint.x, 18.5f);
+					path.add(startingPoint);
+					path.add(intermediate1);
+					path.add(intermediate2);
+					path.add(intermediate3);
+					path.add(endingPoint);
+					mv.setUserPath(path);
+				} else if (inSpecialCorner(endingPoint)) {
+					path.clear();
+					intermediate1 = new PointF(startingPoint.x, 18.5f);
+					intermediate2 = new PointF(21f, 18.5f);
+					intermediate3 = new PointF(21f, endingPoint.y);
+					path.add(startingPoint);
+					path.add(intermediate1);
+					path.add(intermediate2);
+					path.add(intermediate3);
+					path.add(endingPoint);
+					mv.setUserPath(path);
+				} else {
+					// Connect starting point, two intermediate points
+					// and ending point in order to create a path
+					intermediate1 = new PointF(startingPoint.x, 18.5f);
+					intermediate2 = new PointF(endingPoint.x, 18.5f);
+					path.clear();
+					path.add(startingPoint);
+					path.add(intermediate1);
+					path.add(intermediate2);
+					path.add(endingPoint);
+					mv.setUserPath(path);
+				}
 			}
 		}
+	}
+
+	public boolean inSpecialCorner(PointF point) {
+		if (point.x > 22.83)
+			return true;
+		return false;
 	}
 }
