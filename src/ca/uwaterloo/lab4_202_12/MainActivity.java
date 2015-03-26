@@ -446,7 +446,7 @@ public class MainActivity extends Activity implements PositionListener {
 			y = 0;
 		}
 		if (userLocation != null) {
-			userLocation.x += x;
+			userLocation.x -= x;
 			userLocation.y += y;
 			if (userLocation.x < 2.19f || userLocation.x > 24.3f
 					|| obstacle1(userLocation) || obstacle2(userLocation)
@@ -454,7 +454,7 @@ public class MainActivity extends Activity implements PositionListener {
 					|| obstacle5(userLocation) || obstacle6(userLocation)
 					|| obstacle7(userLocation) || userLocation.y < 2.18f
 					|| userLocation.y > 21) {
-				userLocation.x -= x;
+				userLocation.x += x;
 				userLocation.y -= y;
 			}
 			source.setUserPoint(userLocation);
