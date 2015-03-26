@@ -429,10 +429,20 @@ public class MainActivity extends Activity implements PositionListener {
 	}
 
 	public static void updateLocation(MapView source, float y, float x) {
-		if (y > 0.8 || y < -0.8) {
+		if (y > 0.5) {
+			y = 1;
 			x = 0;
 		}
-		if (x > 0.8 || x < -0.8) {
+		if (y < -0.5) {
+			y = -1;
+			x = 0;
+		}
+		if (x > 0.5) {
+			x = 1;
+			y = 0;
+		}
+		if (x < -0.5) {
+			x = -1;
 			y = 0;
 		}
 		if (userLocation != null) {
