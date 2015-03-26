@@ -2,6 +2,7 @@ package ca.uwaterloo.lab4_202_12;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import mapper.MapLoader;
 import mapper.MapView;
 import mapper.NavigationalMap;
@@ -30,6 +31,7 @@ public class MainActivity extends Activity implements PositionListener {
 
 	static MapView mv;
 	static NavigationalMap map;
+	static int step = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -83,7 +85,6 @@ public class MainActivity extends Activity implements PositionListener {
 	 */
 	public static class PlaceholderFragment extends Fragment {
 
-		private int step = 0;
 		// All in degrees because people are used
 		// to measure things in degrees
 		private float uncalibrate = 0;
@@ -112,6 +113,13 @@ public class MainActivity extends Activity implements PositionListener {
 				displacementTV[i] = new TextView(rootView.getContext());
 			}
 
+			((Button) rootView.findViewById(R.id.calibrate))
+					.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							calibrateFactor = uncalibrate;
+						}
+					});
 			// Declare sensor manager and linear layout
 			SensorManager sensorManager = (SensorManager) rootView.getContext()
 					.getSystemService(SENSOR_SERVICE);
@@ -139,6 +147,8 @@ public class MainActivity extends Activity implements PositionListener {
 
 			// Add View
 			lmain.addView(mv);
+			lmain.addView(displacementTV[0]);
+			lmain.addView(displacementTV[1]);
 			return rootView;
 		}
 
@@ -199,6 +209,9 @@ public class MainActivity extends Activity implements PositionListener {
 								.toRadians((calibrate)));
 						displacement[1] += (float) Math.sin(Math
 								.toRadians((calibrate)));
+						updateLocation(mv,
+								(float) Math.cos(Math.toRadians((calibrate))),
+								(float) Math.sin(Math.toRadians((calibrate))));
 					}
 					stepTV.setText(String.format("Steps: " + step));
 					displacementTV[0].setText(String.format("North: %.4f",
@@ -259,6 +272,7 @@ public class MainActivity extends Activity implements PositionListener {
 	// Starting and ending points
 	static PointF startingPoint;
 	static PointF endingPoint;
+	static PointF userLocation;
 	// Two arbitrary points that help us to connect path
 	static PointF intermediate1;
 	static PointF intermediate2;
@@ -266,11 +280,9 @@ public class MainActivity extends Activity implements PositionListener {
 
 	@Override
 	public void originChanged(MapView source, PointF loc) {
-		Toast t = Toast.makeText(getApplicationContext(),
-				String.format("%f %f", loc.x, loc.y), Toast.LENGTH_SHORT);
-		t.show();
 		startingPoint = checkWall(loc);
-		source.setUserPoint(startingPoint);
+		userLocation = new PointF(startingPoint.x, startingPoint.y);
+		source.setUserPoint(userLocation);
 		if (endingPoint != null) {
 			drawPath();
 		}
@@ -423,7 +435,7 @@ public class MainActivity extends Activity implements PositionListener {
 	}
 
 	/**
-	 * A method that draw the path on the map by adding points to the path
+	 * An algorithm that draw the path on the map by adding points to the path
 	 * arraylist and using setUserPath()
 	 */
 	public void drawPath() {
@@ -443,6 +455,7 @@ public class MainActivity extends Activity implements PositionListener {
 			} else {
 				if (inSpecialCorner(startingPoint)
 						&& inSpecialCorner(endingPoint)) {
+					// if both points are in special corner
 					intermediate1 = new PointF(21f, startingPoint.y);
 					intermediate2 = new PointF(21f, endingPoint.y);
 					path.clear();
@@ -453,6 +466,7 @@ public class MainActivity extends Activity implements PositionListener {
 					mv.setUserPath(path);
 
 				} else if (inSpecialCorner(startingPoint)) {
+					// if starting point is in special corner
 					path.clear();
 					intermediate1 = new PointF(21f, startingPoint.y);
 					intermediate2 = new PointF(21f, 18.5f);
@@ -464,6 +478,7 @@ public class MainActivity extends Activity implements PositionListener {
 					path.add(endingPoint);
 					mv.setUserPath(path);
 				} else if (inSpecialCorner(endingPoint)) {
+					// if ending point is in special corner
 					path.clear();
 					intermediate1 = new PointF(startingPoint.x, 18.5f);
 					intermediate2 = new PointF(21f, 18.5f);
@@ -494,5 +509,13 @@ public class MainActivity extends Activity implements PositionListener {
 		if (point.x > 22.83)
 			return true;
 		return false;
+	}
+
+	public static void updateLocation(MapView source, float y, float x) {
+		if (userLocation != null) {
+			userLocation.x += x;
+			userLocation.y += y;
+			source.setUserPoint(userLocation);
+		}
 	}
 }
