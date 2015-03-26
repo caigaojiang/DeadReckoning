@@ -120,6 +120,7 @@ public class MainActivity extends Activity implements PositionListener {
 							calibrateFactor = uncalibrate;
 						}
 					});
+
 			// Declare sensor manager and linear layout
 			SensorManager sensorManager = (SensorManager) rootView.getContext()
 					.getSystemService(SENSOR_SERVICE);
@@ -325,90 +326,6 @@ public class MainActivity extends Activity implements PositionListener {
 	}
 
 	/**
-	 * 
-	 * @param point
-	 *            either the starting point or the ending point
-	 * @return true if user put a point on desk #1. Otherwise, false
-	 */
-	public boolean obstacle1(PointF point) {
-		if (point.x > 2.19 && point.x < 3.77 && point.y < 17.5)
-			return true;
-		return false;
-	}
-
-	/**
-	 * 
-	 * @param point
-	 *            either the starting point or the ending point
-	 * @return true if user put a point on desk #2. Otherwise, false
-	 */
-	public boolean obstacle2(PointF point) {
-		if (point.x > 10.08 && point.x < 13.19 && point.y < 17.5)
-			return true;
-		return false;
-	}
-
-	/**
-	 * 
-	 * @param point
-	 *            either the starting point or the ending point
-	 * @return true if user put a point on desk #3. Otherwise, false
-	 */
-	public boolean obstacle3(PointF point) {
-		if (point.x > 13.9 && point.x < 17.2 && point.y < 17.5)
-			return true;
-		return false;
-	}
-
-	/**
-	 * 
-	 * @param point
-	 *            either the starting point or the ending point
-	 * @return true if user put a point on desk #3. Otherwise, false
-	 */
-	public boolean obstacle4(PointF point) {
-		if (point.x > 20.7 && point.y < 4.4)
-			return true;
-		return false;
-	}
-
-	/**
-	 * 
-	 * @param point
-	 *            either the starting point or the ending point
-	 * @return true if user put a point on desk #3. Otherwise, false
-	 */
-	public boolean obstacle5(PointF point) {
-		if (point.x > 22.83 && point.y < 19.24 && point.y > 6.99)
-			return true;
-		return false;
-	}
-
-	/**
-	 * 
-	 * @param point
-	 *            either the starting point or the ending point
-	 * @return true if user put a point on desk #3. Otherwise, false
-	 */
-	public boolean obstacle6(PointF point) {
-		if (point.x > 21.5 && point.y > 20.1)
-			return true;
-		return false;
-	}
-
-	/**
-	 * 
-	 * @param point
-	 *            either the starting point or the ending point
-	 * @return true if user put a point on desk #3. Otherwise, false
-	 */
-	public boolean obstacle7(PointF point) {
-		if (point.x > 4.79 && point.x < 19.7 && point.y > 19.26)
-			return true;
-		return false;
-	}
-
-	/**
 	 * A method that detects obstacles between two points (Basically check if
 	 * two points are in the same area/section)
 	 * 
@@ -512,10 +429,109 @@ public class MainActivity extends Activity implements PositionListener {
 	}
 
 	public static void updateLocation(MapView source, float y, float x) {
+		if (y > 0.8 || y < -0.8) {
+			x = 0;
+		}
+		if (x > 0.8 || x < -0.8) {
+			y = 0;
+		}
 		if (userLocation != null) {
 			userLocation.x += x;
 			userLocation.y += y;
+			if (userLocation.x < 2.19f || userLocation.x > 24.3f
+					|| obstacle1(userLocation) || obstacle2(userLocation)
+					|| obstacle3(userLocation) || obstacle4(userLocation)
+					|| obstacle5(userLocation) || obstacle6(userLocation)
+					|| obstacle7(userLocation) || userLocation.y < 2.18f
+					|| userLocation.y > 21) {
+				userLocation.x -= x;
+				userLocation.y -= y;
+			}
 			source.setUserPoint(userLocation);
 		}
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #1. Otherwise, false
+	 */
+	public static boolean obstacle1(PointF point) {
+		if (point.x > 2.19 && point.x < 3.77 && point.y < 17.5)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #2. Otherwise, false
+	 */
+	public static boolean obstacle2(PointF point) {
+		if (point.x > 10.08 && point.x < 13.19 && point.y < 17.5)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #3. Otherwise, false
+	 */
+	public static boolean obstacle3(PointF point) {
+		if (point.x > 13.9 && point.x < 17.2 && point.y < 17.5)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #3. Otherwise, false
+	 */
+	public static boolean obstacle4(PointF point) {
+		if (point.x > 20.7 && point.y < 4.4)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #3. Otherwise, false
+	 */
+	public static boolean obstacle5(PointF point) {
+		if (point.x > 22.83 && point.y < 19.24 && point.y > 6.99)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #3. Otherwise, false
+	 */
+	public static boolean obstacle6(PointF point) {
+		if (point.x > 21.5 && point.y > 20.1)
+			return true;
+		return false;
+	}
+
+	/**
+	 * 
+	 * @param point
+	 *            either the starting point or the ending point
+	 * @return true if user put a point on desk #3. Otherwise, false
+	 */
+	public static boolean obstacle7(PointF point) {
+		if (point.x > 4.79 && point.x < 19.7 && point.y > 19.26)
+			return true;
+		return false;
 	}
 }
