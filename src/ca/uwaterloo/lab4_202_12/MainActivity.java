@@ -429,36 +429,43 @@ public class MainActivity extends Activity implements PositionListener {
 	}
 
 	public static void updateLocation(MapView source, float y, float x) {
-		if (y > 0.5) {
+		if (y > 0.4) {
 			y = 1;
 			x = 0;
 		}
-		if (y < -0.5) {
+		if (y < -0.4) {
 			y = -1;
 			x = 0;
 		}
-		if (x > 0.5) {
+		if (x > 0.4) {
 			x = 1;
 			y = 0;
 		}
-		if (x < -0.5) {
+		if (x < -0.4) {
 			x = -1;
 			y = 0;
 		}
 		if (userLocation != null) {
-			userLocation.x -= x;
-			userLocation.y += y;
+			userLocation.x -= x * 1.8;
+			userLocation.y += y * 1.8;
 			if (userLocation.x < 2.19f || userLocation.x > 24.3f
 					|| obstacle1(userLocation) || obstacle2(userLocation)
 					|| obstacle3(userLocation) || obstacle4(userLocation)
 					|| obstacle5(userLocation) || obstacle6(userLocation)
 					|| obstacle7(userLocation) || userLocation.y < 2.18f
 					|| userLocation.y > 21) {
-				userLocation.x += x;
-				userLocation.y -= y;
+				userLocation.x += x * 1.8;
+				userLocation.y -= y * 1.8;
 			}
 			source.setUserPoint(userLocation);
+			if (Math.sqrt(Math.pow(userLocation.x - endingPoint.x, 2)
+					+ Math.pow(userLocation.y - endingPoint.y, 2)) < 1) {
+				Toast toast = Toast.makeText(mv.getContext(),
+						"You have reached the destination.", Toast.LENGTH_LONG);
+				toast.show();
+			}
 		}
+
 	}
 
 	/**
